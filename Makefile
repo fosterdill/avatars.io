@@ -1,3 +1,3 @@
 
-avatars: main.c connection.c pool.c lib/threadpool/src/threadpool.c client.c
-	gcc -o main main.c connection.c pool.c lib/threadpool/src/threadpool.c client.c -I. `pkg-config --cflags --libs MagickWand` -lcurl
+avatars: router.c main.c connection.c pool.c parser.c lib/threadpool/src/threadpool.c lib/slre/slre.c client.c
+	gcc -o main  router.c main.c connection.c pool.c parser.c lib/threadpool/src/threadpool.c lib/slre/slre.c client.c -I. `pkg-config --cflags --libs MagickWand` -lcurl

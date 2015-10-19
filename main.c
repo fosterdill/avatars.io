@@ -13,7 +13,7 @@
 #include <pthread.h> //for threading , link with lpthread
 #include "connection.h"
 #include "pool.h"
-#include "client.h"
+#include "router.h"
 
 #define LISTEN_QUEUE_SIZE 20
 
@@ -37,14 +37,12 @@ int main(int argc , char *argv[])
     listen(socket_desc , LISTEN_QUEUE_SIZE);
 
     //Accept and incoming connection
-    puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
 
     threadpool_t *pool = create_threadpool();
 
     while((client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)))
     {
-        puts("Connection accepted");
 
         if( threadpool_add(pool, connection_handler, (void*) &client_sock, 0))
         {
@@ -53,7 +51,6 @@ int main(int argc , char *argv[])
         }
 
         //Now join the thread , so that we dont terminate before the threa
-        puts("Handler assigned");
     }
 
     if (client_sock < 0)
@@ -77,8 +74,6 @@ void *connection_handler(void *socket_desc)
 
     // //Send some messages to the client
     message = "Greetings! I am your connection handler\n";
-    puts("set message");
-    puts(message);
     // write(sock , message , strlen(message));
 
     // message = "Now type something and i shall repeat what you type \n";
@@ -86,16 +81,13 @@ void *connection_handler(void *socket_desc)
 
     //Receive a message from client
     buf_size = recv(sock , client_message , 5000 , 0);
-    puts("receive buffer");
-    puts(client_message);
         //end of string marker
     // client_message[buf_size] = '\0';
 
     //Send the message back to client
-    download_jpeg("http://www.joomlaworks.net/images/demos/galleries/abstract/7.jpg");
-    send(sock , message , strlen(message), 0);
-    puts("send message");
-    puts(message);
+    handle_request(client_message, sock);
+    // download_jpeg("http://www.joomlaworks.net/images/demos/galleries/abstract/7.jpg", sock);
+    // send(sock , message , strlen(message), 0);
 
     close(sock);
 
@@ -104,7 +96,6 @@ void *connection_handler(void *socket_desc)
 
     if(buf_size == 0)
     {
-        puts("Client disconnected");
         fflush(stdout);
     }
     else if(buf_size == -1)
